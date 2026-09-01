@@ -4,8 +4,11 @@ import ContactForm from "@/components/ContactForm";
 
 export const revalidate = 60;
 
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = await getProductBySlug(params.slug);
+type Params = Promise<{ slug: string }>;
+
+export default async function ProductDetailPage({ params }: { params: Params }) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
   return (
@@ -25,7 +28,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
             {product.price ? `₦${Number(product.price).toLocaleString()}` : "Contact for price"}
           </p>
           <p>{product.description}</p>
-          <a
+          
             className="btn"
             href={`https://wa.me/2348061975051?text=${encodeURIComponent(
               `Hi, I'd like a quote for: ${product.name}`

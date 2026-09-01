@@ -2,13 +2,16 @@ import { getPost } from "@/lib/posts";
 import { notFound } from "next/navigation";
 import PostEditor from "@/components/admin/blog-editor/PostEditor";
 
-export default async function EditPostPage({ params }: { params: { id: string } }) {
-  const post = await getPost(params.id);
+type Params = Promise<{ id: string }>;
+
+export default async function EditPostPage({ params }: { params: Params }) {
+  const { id } = await params;
+  const post = await getPost(id);
   if (!post) notFound();
 
   return (
     <PostEditor
-      key={params.id}
+      key={id}
       initialPost={{
         id: post.id,
         title: post.title,
