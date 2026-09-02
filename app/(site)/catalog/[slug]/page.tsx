@@ -28,7 +28,7 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
             {product.price ? `₦${Number(product.price).toLocaleString()}` : "Contact for price"}
           </p>
           <p>{product.description}</p>
-          
+          <a
             className="btn"
             href={`https://wa.me/2348061975051?text=${encodeURIComponent(
               `Hi, I'd like a quote for: ${product.name}`
