@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
@@ -22,7 +23,15 @@ export default function HomePage() {
               <span>🔋 Quality Components</span>
             </div>
           </div>
-          <div className="hero-art" aria-hidden="true"></div>
+          <div className="hero-art">
+  <Image
+    src="/images/ggg.jpg"
+    alt="logo"
+    fill
+    style={{ objectFit: "cover", borderRadius: "1.5rem" }}
+    priority
+  />
+</div>
         </div>
       </section>
 
