@@ -13,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/blog`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE_URL}/catalog`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/work`, changeFrequency: "weekly", priority: 0.6 },
   ];
 
   const [posts, products] = await Promise.all([listPublishedPosts(), listActiveProducts()]);

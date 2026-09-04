@@ -8,6 +8,7 @@ export default function AdminSidebar() {
       <AdminLink href="/admin">Dashboard</AdminLink>
       <AdminLink href="/admin/blog">Blog Posts</AdminLink>
       <AdminLink href="/admin/catalog">Catalog</AdminLink>
+      <AdminLink href="/admin/projects">Our Work</AdminLink>
       <AdminLink href="/admin/inquiries">Inquiries</AdminLink>
       <SignOutButton />
     </nav>

@@ -1,12 +1,5 @@
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import { EditorDirtyProvider } from "@/context/EditorDirtyContext";
 
-export const dynamic = "force-dynamic";
-
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="admin-shell">
-      <AdminSidebar />
-      <main className="admin-main">{children}</main>
-    </div>
-  );
+export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
+  return <EditorDirtyProvider>{children}</EditorDirtyProvider>;
 }

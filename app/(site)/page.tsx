@@ -1,7 +1,13 @@
 import Link from "next/link";
+import { listFeaturedProjects } from "@/lib/projects";
+import WorkCarousel from "@/components/WorkCarousel";
 import Image from "next/image";
 
-export default function HomePage() {
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const featuredProjects = await listFeaturedProjects();
+
   return (
     <>
       <section className="hero">
@@ -52,6 +58,8 @@ export default function HomePage() {
           <Link href="/training" className="link">Learn more →</Link>
         </div>
       </section>
+
+      <WorkCarousel projects={featuredProjects} />
 
       <section className="cta-wide">
         <div className="container">
