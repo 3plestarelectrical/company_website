@@ -5,10 +5,16 @@ import { createContext, useContext, useState, useCallback } from "react";
 type EditorDirtyContextValue = {
   isDirty: boolean;
   setIsDirty: (dirty: boolean) => void;
-  guardNavigation: () => boolean; // true if navigation should proceed
+  guardNavigation: () => boolean;
 };
 
-const EditorDirtyContext = createContext<EditorDirtyContextValue | null>(null);
+const defaultValue: EditorDirtyContextValue = {
+  isDirty: false,
+  setIsDirty: () => {},
+  guardNavigation: () => true,
+};
+
+const EditorDirtyContext = createContext<EditorDirtyContextValue>(defaultValue);
 
 export function EditorDirtyProvider({ children }: { children: React.ReactNode }) {
   const [isDirty, setIsDirty] = useState(false);
@@ -16,7 +22,7 @@ export function EditorDirtyProvider({ children }: { children: React.ReactNode })
   const guardNavigation = useCallback(() => {
     if (!isDirty) return true;
     const confirmed = window.confirm("You have unsaved changes. Leave without saving?");
-    if (confirmed) setIsDirty(false); // clear before the next page ever renders
+    if (confirmed) setIsDirty(false);
     return confirmed;
   }, [isDirty]);
 
@@ -28,9 +34,5 @@ export function EditorDirtyProvider({ children }: { children: React.ReactNode })
 }
 
 export function useEditorDirty() {
-  const ctx = useContext(EditorDirtyContext);
-  if (!ctx) {
-    throw new Error("useEditorDirty must be used within EditorDirtyProvider");
-  }
-  return ctx;
+  return useContext(EditorDirtyContext);
 }
