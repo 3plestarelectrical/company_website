@@ -16,6 +16,7 @@ type InquiryRow = {
 export default function InquiryList({ initialInquiries }: { initialInquiries: InquiryRow[] }) {
   const [inquiries, setInquiries] = useState(initialInquiries);
   const [filter, setFilter] = useState<"all" | "new" | "contacted" | "closed">("all");
+  const [viewing, setViewing] = useState<InquiryRow | null>(null);
 
   async function handleStatusChange(id: string, status: InquiryRow["status"]) {
     setInquiries(inquiries.map((i) => (i.id === id ? { ...i, status } : i)));
@@ -59,7 +60,19 @@ export default function InquiryList({ initialInquiries }: { initialInquiries: In
                 <td>{inq.name}</td>
                 <td>{inq.contact}</td>
                 <td>{inq.type}</td>
-                <td className="message-cell">{inq.message || "—"}</td>
+                <td className="message-cell-wrap">
+                  {inq.message ? (
+                    <button
+                      type="button"
+                      className="view-message-btn"
+                      onClick={() => setViewing(inq)}
+                    >
+                      View message
+                    </button>
+                  ) : (
+                    "—"
+                  )}
+                </td>
                 <td>{new Date(inq.created_at).toLocaleDateString()}</td>
                 <td>
                   <select
@@ -77,6 +90,35 @@ export default function InquiryList({ initialInquiries }: { initialInquiries: In
             ))}
           </tbody>
         </table>
+      )}
+
+      {viewing && (
+        <div className="modal-backdrop" onClick={() => setViewing(null)} role="presentation">
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Full message"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h3>{viewing.name}</h3>
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Close"
+                onClick={() => setViewing(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <p className="muted">
+              {viewing.contact} · {viewing.type} ·{" "}
+              {new Date(viewing.created_at).toLocaleDateString()}
+            </p>
+            <p className="modal-message-body">{viewing.message}</p>
+          </div>
+        </div>
       )}
     </div>
   );

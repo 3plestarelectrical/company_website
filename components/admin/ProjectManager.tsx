@@ -1,33 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import type { ProjectRow } from "@/lib/projects";
-import { saveProjectAction, deleteProjectAction } from "@/app/admin/(dashboard)/projects/actions";
+import type { ProductRow } from "@/lib/products";
+import { saveProductAction, deleteProductAction } from "@/app/admin/(dashboard)/catalog/actions";
 
 const emptyForm = {
   id: undefined as string | undefined,
-  title: "",
+  name: "",
   description: "",
-  image_url: "",
-  featured: false,
+  price: "",
+  category: "",
   active: true,
+  image_urls: [] as string[],
 };
 
-export default function ProjectManager({ initialProjects }: { initialProjects: ProjectRow[] }) {
-  const [projects, setProjects] = useState(initialProjects);
+export default function ProductManager({ initialProducts }: { initialProducts: ProductRow[] }) {
+  const [products, setProducts] = useState(initialProducts);
   const [form, setForm] = useState(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
 
-  function startEdit(p: ProjectRow) {
+  function startEdit(p: ProductRow) {
     setForm({
       id: p.id,
-      title: p.title,
+      name: p.name,
       description: p.description ?? "",
-      image_url: p.image_url,
-      featured: p.featured,
+      price: p.price ?? "",
+      category: p.category ?? "",
       active: p.active,
+      image_urls: p.image_urls ?? [],
     });
     setError("");
   }
@@ -44,24 +46,25 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || data?.error || "Upload failed");
-      setForm((f) => ({ ...f, image_url: data.url }));
+      setForm((f) => ({ ...f, image_urls: [...f.image_urls, data.url] }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed. Try again.");
     } finally {
       setIsUploading(false);
+      e.target.value = "";
     }
+  }
+
+  function removeImage(url: string) {
+    setForm((f) => ({ ...f, image_urls: f.image_urls.filter((u) => u !== url) }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!form.image_url) {
-      setError("Upload a photo before saving.");
-      return;
-    }
     setIsSaving(true);
     try {
-      await saveProjectAction(form);
+      await saveProductAction(form);
       window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed.");
@@ -70,58 +73,80 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm("Delete this project photo?")) return;
-    await deleteProjectAction(id);
-    setProjects(projects.filter((p) => p.id !== id));
+    if (!window.confirm("Delete this product?")) return;
+    await deleteProductAction(id);
+    setProducts(products.filter((p) => p.id !== id));
   }
 
   return (
     <div className="product-manager">
       <form onSubmit={handleSubmit} className="form product-form">
-        <h2>{form.id ? "Edit project" : "Add project"}</h2>
-
-        {form.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={form.image_url} alt="" className="block-image-preview" />
-        ) : (
-          <p className="empty-state">No photo uploaded yet.</p>
-        )}
-        <input type="file" accept="image/*" onChange={handleFileSelect} disabled={isUploading} />
-        {isUploading && <span role="status">Uploading…</span>}
+        <h2>{form.id ? "Edit product" : "Add product"}</h2>
 
         <label>
-          Title
+          Name
           <input
             required
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="e.g. 5kVA Hybrid Install — Kaduna"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
         </label>
         <label>
-          Caption / Description
+          Description
           <textarea
             rows={3}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Short note about the job"
           />
         </label>
-        <label className="checkbox-label">
+        <label>
+          Price (₦, optional — leave blank for &ldquo;contact for price&rdquo;)
           <input
-            type="checkbox"
-            checked={form.featured}
-            onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+            type="number"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
           />
-          Featured (show in homepage carousel)
         </label>
+        <label>
+          Category
+          <input
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+          />
+        </label>
+
+        <div className="product-images-field">
+          <span className="product-images-label">Photos</span>
+          {form.image_urls.length > 0 && (
+            <div className="product-image-grid">
+              {form.image_urls.map((url) => (
+                <div key={url} className="product-image-thumb">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" />
+                  <button
+                    type="button"
+                    aria-label="Remove image"
+                    className="product-image-remove"
+                    onClick={() => removeImage(url)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <input type="file" accept="image/*" onChange={handleFileSelect} disabled={isUploading} />
+          {isUploading && <span role="status">Uploading…</span>}
+          <p className="block-hint">Add as many photos as you like. The first one is used as the main thumbnail.</p>
+        </div>
+
         <label className="checkbox-label">
           <input
             type="checkbox"
             checked={form.active}
             onChange={(e) => setForm({ ...form, active: e.target.checked })}
           />
-          Visible in gallery
+          Visible on site
         </label>
 
         {error && (
@@ -132,7 +157,7 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
 
         <div className="form-actions">
           <button type="submit" disabled={isSaving || isUploading}>
-            {isSaving ? "Saving…" : form.id ? "Update project" : "Add project"}
+            {isSaving ? "Saving…" : form.id ? "Update product" : "Add product"}
           </button>
           {form.id && (
             <button type="button" onClick={() => setForm(emptyForm)}>
@@ -146,21 +171,27 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
         <thead>
           <tr>
             <th>Photo</th>
-            <th>Title</th>
-            <th>Featured</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
             <th>Visible</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {projects.map((p) => (
+          {products.map((p) => (
             <tr key={p.id}>
               <td>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.image_url} alt="" className="admin-thumb" />
+                {p.image_urls?.[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.image_urls[0]} alt="" className="admin-thumb" />
+                ) : (
+                  "—"
+                )}
               </td>
-              <td>{p.title}</td>
-              <td>{p.featured ? "Yes" : "No"}</td>
+              <td>{p.name}</td>
+              <td>{p.category || "—"}</td>
+              <td>{p.price ? `₦${Number(p.price).toLocaleString()}` : "Contact for price"}</td>
               <td>{p.active ? "Yes" : "No"}</td>
               <td>
                 <button type="button" onClick={() => startEdit(p)}>

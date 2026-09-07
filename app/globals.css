@@ -34,6 +34,7 @@ a {
   position: sticky;
   top: 0;
   background: rgba(11, 15, 20, 0.8);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid #1e2633;
   z-index: 10;
@@ -441,15 +442,92 @@ main.container {
   align-items: center;
   justify-content: center;
   background: var(--bg);
+  position: relative;
+  overflow: hidden;
 }
+
+.login-page-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(90deg, #182238 1px, transparent 1px),
+    linear-gradient(#182238 1px, transparent 1px),
+    radial-gradient(circle at 2px 2px, #24344f 1.5px, transparent 1.5px);
+  background-size: 64px 64px, 64px 64px, 64px 64px;
+  background-position: -1px -1px, -1px -1px, -1px -1px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, black 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, black 0%, transparent 75%);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.3rem;
+}
+.login-logo {
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.login-logo span {
+  color: var(--accent);
+}
+.status-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 0 rgba(31, 169, 113, 0.6);
+  animation: status-pulse 2.4s ease-out infinite;
+  flex-shrink: 0;
+}
+@keyframes status-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(31, 169, 113, 0.55); }
+  70% { box-shadow: 0 0 0 8px rgba(31, 169, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(31, 169, 113, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-dot { animation: none; }
+}
+
+.login-subtitle {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0 0 1.4rem;
+}
+
 .login-form {
+  position: relative;
+  z-index: 1;
   background: var(--card);
   border: 1px solid #1b2434;
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 2.25rem 2rem;
   display: grid;
-  gap: 0.8rem;
-  width: min(360px, 90vw);
+  gap: 0.9rem;
+  width: min(380px, 90vw);
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.5);
+}
+.login-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.login-form button {
+  margin-top: 0.4rem;
+}
+
+.form input:focus-visible,
+.form select:focus-visible,
+.form textarea:focus-visible,
+.login-form input:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
 }
 
 /* Block editor */
@@ -619,13 +697,102 @@ main.container {
   border-color: var(--brand);
   font-weight: 700;
 }
-.message-cell {
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.view-message-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  font-family: inherit;
 }
-
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 12, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+}
+.modal-card {
+  background: var(--card);
+  border: 1px solid #1b2434;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: min(520px, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.3rem;
+}
+.modal-header h3 {
+  margin: 0;
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+.modal-close:hover {
+  color: var(--ink);
+}
+.modal-message-body {
+  margin-top: 1rem;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+.product-images-field {
+  display: grid;
+  gap: 0.6rem;
+}
+.product-images-label {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.product-image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.product-image-thumb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.product-image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid #1a2334;
+  display: block;
+}
+.product-image-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ff6b6b;
+  color: #1a0505;
+  border: none;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
 /* Work gallery (public /work page) */
 .gallery-grid {
   display: grid;

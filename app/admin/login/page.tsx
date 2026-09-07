@@ -24,7 +24,7 @@ function LoginForm() {
     });
 
     if (result?.error) {
-      setError("Invalid email or password.");
+      setError("Wrong email or password. Try again.");
       setIsSubmitting(false);
       return;
     }
@@ -34,12 +34,20 @@ function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="login-form">
-      <h1>Admin Login</h1>
+      <div className="login-brand">
+        <span className="status-dot" aria-hidden="true" />
+        <span className="login-logo">
+          3<span>ple</span> Star
+        </span>
+      </div>
+      <p className="login-subtitle">Sign in to manage your site</p>
+
       {error && (
         <p role="alert" className="error-text">
           {error}
         </p>
       )}
+
       <label>
         Email
         <input
@@ -70,6 +78,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <div className="login-page">
+      <div className="login-page-pattern" aria-hidden="true" />
       <Suspense fallback={null}>
         <LoginForm />
       </Suspense>
