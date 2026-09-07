@@ -4,12 +4,22 @@ import { useState } from "react";
 import type { ProductRow } from "@/lib/products";
 import { saveProductAction, deleteProductAction } from "@/app/admin/(dashboard)/catalog/actions";
 
-const emptyForm = { id: undefined as string | undefined, name: "", description: "", price: "", category: "", active: true };
+const emptyForm = {
+  id: undefined as string | undefined,
+  name: "",
+  description: "",
+  price: "",
+  category: "",
+  active: true,
+  image_urls: [] as string[],
+};
 
 export default function ProductManager({ initialProducts }: { initialProducts: ProductRow[] }) {
   const [products, setProducts] = useState(initialProducts);
   const [form, setForm] = useState(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState("");
 
   function startEdit(p: ProductRow) {
     setForm({
@@ -19,18 +29,45 @@ export default function ProductManager({ initialProducts }: { initialProducts: P
       price: p.price ?? "",
       category: p.category ?? "",
       active: p.active,
+      image_urls: p.image_urls ?? [],
     });
+    setError("");
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/upload?filename=${encodeURIComponent(file.name)}`, {
+        method: "POST",
+        body: file,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || data?.error || "Upload failed");
+      setForm((f) => ({ ...f, image_urls: [...f.image_urls, data.url] }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed. Try again.");
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  function removeImage(url: string) {
+    setForm((f) => ({ ...f, image_urls: f.image_urls.filter((u) => u !== url) }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     setIsSaving(true);
     try {
       await saveProductAction(form);
-      // Optimistic-ish: refetch is simplest since Server Actions revalidate the route,
-      // but for immediate feedback in this client list we just reload from the server.
       window.location.reload();
-    } finally {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed.");
       setIsSaving(false);
     }
   }
@@ -45,6 +82,7 @@ export default function ProductManager({ initialProducts }: { initialProducts: P
     <div className="product-manager">
       <form onSubmit={handleSubmit} className="form product-form">
         <h2>{form.id ? "Edit product" : "Add product"}</h2>
+
         <label>
           Name
           <input
@@ -76,6 +114,32 @@ export default function ProductManager({ initialProducts }: { initialProducts: P
             onChange={(e) => setForm({ ...form, category: e.target.value })}
           />
         </label>
+
+        <div className="product-images-field">
+          <span className="product-images-label">Photos</span>
+          {form.image_urls.length > 0 && (
+            <div className="product-image-grid">
+              {form.image_urls.map((url) => (
+                <div key={url} className="product-image-thumb">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" />
+                  <button
+                    type="button"
+                    aria-label="Remove image"
+                    className="product-image-remove"
+                    onClick={() => removeImage(url)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <input type="file" accept="image/*" onChange={handleFileSelect} disabled={isUploading} />
+          {isUploading && <span role="status">Uploading…</span>}
+          <p className="block-hint">Add as many photos as you like. The first one is used as the main thumbnail.</p>
+        </div>
+
         <label className="checkbox-label">
           <input
             type="checkbox"
@@ -84,8 +148,15 @@ export default function ProductManager({ initialProducts }: { initialProducts: P
           />
           Visible on site
         </label>
+
+        {error && (
+          <p role="alert" className="error-text">
+            {error}
+          </p>
+        )}
+
         <div className="form-actions">
-          <button type="submit" disabled={isSaving}>
+          <button type="submit" disabled={isSaving || isUploading}>
             {isSaving ? "Saving…" : form.id ? "Update product" : "Add product"}
           </button>
           {form.id && (
@@ -99,6 +170,7 @@ export default function ProductManager({ initialProducts }: { initialProducts: P
       <table className="admin-table">
         <thead>
           <tr>
+            <th>Photo</th>
             <th>Name</th>
             <th>Category</th>
             <th>Price</th>
@@ -109,6 +181,14 @@ export default function ProductManager({ initialProducts }: { initialProducts: P
         <tbody>
           {products.map((p) => (
             <tr key={p.id}>
+              <td>
+                {p.image_urls?.[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.image_urls[0]} alt="" className="admin-thumb" />
+                ) : (
+                  "—"
+                )}
+              </td>
               <td>{p.name}</td>
               <td>{p.category || "—"}</td>
               <td>{p.price ? `₦${Number(p.price).toLocaleString()}` : "Contact for price"}</td>
