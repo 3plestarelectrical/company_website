@@ -913,3 +913,11 @@ main.container {
   border: 1px solid #1a2334;
   display: block;
 }
+.honeypot-field {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitInquiryAction, type InquiryFormState } from "@/app/(site)/contact/actions";
 
 const initialState: InquiryFormState = { success: false };
@@ -12,6 +12,7 @@ type Props = {
 
 export default function ContactForm({ type, showPhone = true }: Props) {
   const [state, formAction, isPending] = useActionState(submitInquiryAction, initialState);
+  const [renderedAt] = useState(() => Date.now().toString());
 
   if (state.success) {
     return (
@@ -28,6 +29,15 @@ export default function ContactForm({ type, showPhone = true }: Props) {
   return (
     <form action={formAction} className="form">
       <input type="hidden" name="type" value={type} />
+      <input type="hidden" name="form_rendered_at" value={renderedAt} />
+
+      <div className="honeypot-field" aria-hidden="true">
+        <label>
+          Company Website
+          <input type="text" name="company_website" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
+
       <label>
         Full Name
         <input required name="name" type="text" />
@@ -42,7 +52,7 @@ export default function ContactForm({ type, showPhone = true }: Props) {
           <input name="phone" type="tel" />
         </label>
       )}
-            {type === "training" && (
+      {type === "training" && (
         <label>
           Program
           <select name="program" defaultValue="Basic Electrical Wiring">

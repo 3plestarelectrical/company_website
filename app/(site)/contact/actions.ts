@@ -8,13 +8,25 @@ export type InquiryFormState = {
   error?: string;
 };
 
+const MIN_SUBMIT_TIME_MS = 1500;
+
 export async function submitInquiryAction(
   _prevState: InquiryFormState,
   formData: FormData
 ): Promise<InquiryFormState> {
+  const honeypot = String(formData.get("company_website") || "").trim();
+  if (honeypot) {
+    return { success: true };
+  }
+
+  const renderedAt = Number(formData.get("form_rendered_at") || 0);
+  if (renderedAt && Date.now() - renderedAt < MIN_SUBMIT_TIME_MS) {
+    return { success: true };
+  }
+
   const name = String(formData.get("name") || "").trim();
   const contact = String(formData.get("email") || formData.get("phone") || "").trim();
-    const type = String(formData.get("type") || "quote");
+  const type = String(formData.get("type") || "quote");
   const program = String(formData.get("program") || "").trim();
   const rawMessage = String(formData.get("message") || "").trim();
   const message = program ? `Program: ${program}\n\n${rawMessage}` : rawMessage;
@@ -23,15 +35,11 @@ export async function submitInquiryAction(
     return { success: false, error: "Name and contact details are required." };
   }
 
-  // Save first — this is the step that must never silently fail, unlike the
-  // old contact.php which relied on PHP mail() alone and doesn't run on Vercel.
   await query(
     `insert into inquiries (name, contact, type, message) values ($1, $2, $3, $4)`,
     [name, contact, type, message]
   );
 
-  // Email is best-effort notification on top of the saved record, not the
-  // source of truth — see notifyNewInquiry's internal error handling.
   await notifyNewInquiry({ name, contact, type, message });
 
   return { success: true };
