@@ -14,8 +14,10 @@ export async function submitInquiryAction(
 ): Promise<InquiryFormState> {
   const name = String(formData.get("name") || "").trim();
   const contact = String(formData.get("email") || formData.get("phone") || "").trim();
-  const type = String(formData.get("type") || "quote");
-  const message = String(formData.get("message") || "").trim();
+    const type = String(formData.get("type") || "quote");
+  const program = String(formData.get("program") || "").trim();
+  const rawMessage = String(formData.get("message") || "").trim();
+  const message = program ? `Program: ${program}\n\n${rawMessage}` : rawMessage;
 
   if (!name || !contact) {
     return { success: false, error: "Name and contact details are required." };

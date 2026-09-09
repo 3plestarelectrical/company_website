@@ -42,6 +42,15 @@ export default function ContactForm({ type, showPhone = true }: Props) {
           <input name="phone" type="tel" />
         </label>
       )}
+            {type === "training" && (
+        <label>
+          Program
+          <select name="program" defaultValue="Basic Electrical Wiring">
+            <option>Basic Electrical Wiring</option>
+            <option>Advanced Solar Installation</option>
+          </select>
+        </label>
+      )}
       <label>
         Message
         <textarea name="message" rows={4} placeholder="Tell us what you need" />
