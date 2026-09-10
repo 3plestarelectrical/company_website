@@ -921,3 +921,127 @@ main.container {
   height: 1px;
   overflow: hidden;
 }
+
+/* ============================================================
+   Glassmorphic system — ambient background + frosted panels
+   ============================================================ */
+
+.ambient-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.35;
+}
+.ambient-glow-green {
+  width: 42vw;
+  height: 42vw;
+  background: var(--brand);
+  top: -10%;
+  left: -8%;
+  animation: drift-a 26s ease-in-out infinite alternate;
+}
+.ambient-glow-gold {
+  width: 34vw;
+  height: 34vw;
+  background: var(--accent);
+  bottom: -12%;
+  right: -6%;
+  animation: drift-b 30s ease-in-out infinite alternate;
+}
+.ambient-glow-blue {
+  width: 30vw;
+  height: 30vw;
+  background: var(--ring);
+  top: 35%;
+  right: 20%;
+  opacity: 0.2;
+  animation: drift-c 34s ease-in-out infinite alternate;
+}
+@keyframes drift-a {
+  from { transform: translate(0, 0); }
+  to { transform: translate(4vw, 6vh); }
+}
+@keyframes drift-b {
+  from { transform: translate(0, 0); }
+  to { transform: translate(-5vw, -4vh); }
+}
+@keyframes drift-c {
+  from { transform: translate(0, 0); }
+  to { transform: translate(-3vw, 5vh); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-glow { animation: none; }
+}
+
+:root {
+  --glass-bg: rgba(15, 21, 32, 0.5);
+  --glass-bg-strong: rgba(15, 21, 32, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.55);
+}
+
+.card,
+.product-card,
+.gallery-item,
+.work-carousel-item,
+.form,
+.login-form,
+.modal-card,
+.admin-sidebar,
+.product-form,
+.admin-main .admin-table,
+.work-carousel-caption {
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.form:not(.login-form):not(.product-form) {
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+}
+
+.form input,
+.form select,
+.form textarea,
+.login-form input {
+  background: rgba(10, 18, 32, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.site-header {
+  background: rgba(11, 15, 20, 0.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.admin-shell {
+  background: transparent;
+}
+.admin-sidebar {
+  border-right: none;
+  margin: 1rem;
+  border-radius: 1rem;
+  height: calc(100vh - 2rem);
+  position: sticky;
+  top: 1rem;
+}
+
+.login-page {
+  background: transparent;
+}
