@@ -23,9 +23,6 @@
 //     </html>
 //   );
 // }
-// Next.js supports CSS imports in the app router; suppress the editor/type-check
-// warning when the project has not generated the default Next CSS declarations.
-// @ts-expect-error CSS side-effect imports are valid in Next.js app layouts.
 import "./globals.css";
 import type { Metadata } from "next";
 import AmbientBackground from "@/components/AmbientBackground";
