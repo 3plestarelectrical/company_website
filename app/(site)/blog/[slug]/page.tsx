@@ -1,6 +1,7 @@
 import { getPostBySlug } from "@/lib/posts";
 import { notFound } from "next/navigation";
 import BlockRenderer from "@/components/blog/BlockRenderer";
+import { plainTextExcerpt } from "@/lib/blocks";
 import type { Metadata } from "next";
 
 export const revalidate = 60;
@@ -11,7 +12,25 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return {};
-  return { title: `${post.title} — 3ple Star Electrical Technology` };
+
+  const description = plainTextExcerpt(post.body);
+
+  return {
+    title: post.title,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      publishedTime: post.published_at ?? undefined,
+      images: post.cover_image ? [{ url: post.cover_image }] : undefined,
+    },
+    twitter: {
+      title: post.title,
+      description,
+      images: post.cover_image ? [post.cover_image] : undefined,
+    },
+  };
 }
 
 export default async function BlogPostPage({ params }: { params: Params }) {
