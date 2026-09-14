@@ -16,8 +16,10 @@ export default async function WorkPage() {
         <div className="gallery-grid">
           {projects.map((p) => (
             <figure key={p.id} className="gallery-item">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.image_url} alt={p.title} />
+              {p.image_urls?.[0] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.image_urls[0]} alt={p.title} />
+              )}
               <figcaption>
                 <strong>{p.title}</strong>
                 {p.description && <p>{p.description}</p>}
