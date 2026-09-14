@@ -39,7 +39,7 @@ export default function WorkCarousel({ projects }: { projects: ProjectRow[] }) {
           {projects.map((p) => (
             <Link href="/work" key={p.id} className="work-carousel-item">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.image_url} alt={p.title} />
+              <img src={p.image_urls[0]} alt={p.title} />
               <span className="work-carousel-caption">{p.title}</span>
             </Link>
           ))}
