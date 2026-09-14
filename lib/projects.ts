@@ -4,7 +4,7 @@ export type ProjectRow = {
   id: string;
   title: string;
   description: string | null;
-  image_url: string;
+  image_urls: string[];
   featured: boolean;
   active: boolean;
   created_at: string;

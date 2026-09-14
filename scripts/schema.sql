@@ -4,7 +4,7 @@ create table if not exists admin_users (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
   password_hash text not null,
-  role text not null default 'developer', -- 'owner' | 'developer'
+  role text not null default 'developer',
   created_at timestamptz not null default now()
 );
 
@@ -14,7 +14,7 @@ create table if not exists posts (
   slug text unique not null,
   body jsonb not null default '[]',
   cover_image text,
-  status text not null default 'draft', -- 'draft' | 'published'
+  status text not null default 'draft',
   published_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -36,10 +36,10 @@ create table if not exists products (
 create table if not exists inquiries (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  contact text not null, -- email or phone
-  type text not null,     -- 'booking' | 'quote' | 'training'
+  contact text not null,
+  type text not null,
   message text,
-  status text not null default 'new', -- 'new' | 'contacted' | 'closed'
+  status text not null default 'new',
   created_at timestamptz not null default now()
 );
 
@@ -47,12 +47,29 @@ create table if not exists projects (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   description text,
-  image_url text not null,
-  featured boolean not null default false, -- shows in homepage carousel
-  active boolean not null default true,     -- shows in /work gallery
+  image_urls text[] not null default '{}',
+  featured boolean not null default false,
+  active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Migration for databases created before this change: projects used to have
+-- a single `image_url` column. This safely converts existing rows to the
+-- new `image_urls` array and drops the old column. No-ops on fresh installs
+-- and is safe to re-run.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_name = 'projects' and column_name = 'image_url'
+  ) then
+    update projects
+      set image_urls = array[image_url]
+      where image_url is not null and image_url <> '' and image_urls = '{}';
+    alter table projects drop column image_url;
+  end if;
+end $$;
 
 create index if not exists idx_posts_status on posts(status);
 create index if not exists idx_posts_slug on posts(slug);

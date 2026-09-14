@@ -8,7 +8,7 @@ const emptyForm = {
   id: undefined as string | undefined,
   title: "",
   description: "",
-  image_url: "",
+  image_urls: [] as string[],
   featured: false,
   active: true,
 };
@@ -25,7 +25,7 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
       id: p.id,
       title: p.title,
       description: p.description ?? "",
-      image_url: p.image_url,
+      image_urls: p.image_urls ?? [],
       featured: p.featured,
       active: p.active,
     });
@@ -44,19 +44,24 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || data?.error || "Upload failed");
-      setForm((f) => ({ ...f, image_url: data.url }));
+      setForm((f) => ({ ...f, image_urls: [...f.image_urls, data.url] }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed. Try again.");
     } finally {
       setIsUploading(false);
+      e.target.value = "";
     }
+  }
+
+  function removeImage(url: string) {
+    setForm((f) => ({ ...f, image_urls: f.image_urls.filter((u) => u !== url) }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!form.image_url) {
-      setError("Upload a photo before saving.");
+    if (form.image_urls.length === 0) {
+      setError("Upload at least one photo before saving.");
       return;
     }
     setIsSaving(true);
@@ -70,7 +75,7 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm("Delete this project photo?")) return;
+    if (!window.confirm("Delete this project?")) return;
     await deleteProjectAction(id);
     setProjects(projects.filter((p) => p.id !== id));
   }
@@ -80,14 +85,33 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
       <form onSubmit={handleSubmit} className="form product-form">
         <h2>{form.id ? "Edit project" : "Add project"}</h2>
 
-        {form.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={form.image_url} alt="" className="block-image-preview" />
-        ) : (
-          <p className="empty-state">No photo uploaded yet.</p>
-        )}
-        <input type="file" accept="image/*" onChange={handleFileSelect} disabled={isUploading} />
-        {isUploading && <span role="status">Uploading…</span>}
+        <div className="product-images-field">
+          <span className="product-images-label">Photos</span>
+          {form.image_urls.length > 0 && (
+            <div className="product-image-grid">
+              {form.image_urls.map((url) => (
+                <div key={url} className="product-image-thumb">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" />
+                  <button
+                    type="button"
+                    aria-label="Remove image"
+                    className="product-image-remove"
+                    onClick={() => removeImage(url)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <input type="file" accept="image/*" onChange={handleFileSelect} disabled={isUploading} />
+          {isUploading && <span role="status">Uploading…</span>}
+          <p className="block-hint">
+            Add as many photos as you like for this project. The first one is used as the thumbnail
+            on the homepage carousel and gallery.
+          </p>
+        </div>
 
         <label>
           Title
@@ -156,8 +180,12 @@ export default function ProjectManager({ initialProjects }: { initialProjects: P
           {projects.map((p) => (
             <tr key={p.id}>
               <td>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.image_url} alt="" className="admin-thumb" />
+                {p.image_urls?.[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.image_urls[0]} alt="" className="admin-thumb" />
+                ) : (
+                  "—"
+                )}
               </td>
               <td>{p.title}</td>
               <td>{p.featured ? "Yes" : "No"}</td>
